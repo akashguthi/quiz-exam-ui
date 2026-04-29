@@ -19,12 +19,12 @@
         <h1 id="login-title" class="mb-2 fw-semibold">Welcome Back</h1>
         <p class="sub-title mb-4">Sign in to continue your exam journey.</p>
 
-        <form class="text-start" action="#" method="post">
+        <form class="text-start" action="login.php" method="post">
             <label class="form-label mb-2" for="username">Username</label>
-            <input id="username" class="u1 mb-3" type="text" placeholder="Enter username" required autocomplete="username"/>
+            <input id="username" class="u1 mb-3" type="text" placeholder="Enter username" required autocomplete="username" name="username"/>
 
             <label class="form-label mb-2" for="password">Password</label>
-            <input id="password" class="p1 mb-2" type="password" placeholder="Enter password" required autocomplete="current-password"/>
+            <input id="password" class="p1 mb-2" type="password" placeholder="Enter password" required autocomplete="current-password" name="password"/>
 
             <div class="d-flex justify-content-end mb-3">
                 <button type="button" class="link-btn p-0">Forgot password?</button>
@@ -35,7 +35,7 @@
 
         <div class="d-flex justify-content-center gap-2 align-items-center">
             <span class="muted-text">New to QuizExam?</span>
-            <button type="button" class="link-btn p-0">Sign up</button>
+            <a href="register.html" class="link-btn p-0 text-decoration-none">Sign up</a>
         </div>
     </section>
 </main>

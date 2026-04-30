@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'db.php';
-session_start();
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'auth.php';
+
+if (is_logged_in()) {
+    header('Location: dashboard.php', true, 302);
+    exit;
+}
 
 function show_error(string $message): void
 {
@@ -44,24 +49,33 @@ if ($username === '' || $password === '') {
     show_error('Username and password are required.');
 }
 
-// Fetch user by username.
-$stmt = $mysqli->prepare("SELECT `id`, `username`, `password_hash` FROM `users` WHERE `username` = ? LIMIT 1");
-$stmt->bind_param('s', $username);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
+// Debug: show detailed SQL errors if `login.php?debug=1` was used.
+$debug = (isset($_GET['debug']) && (string)$_GET['debug'] === '1');
 
-if (!$user || empty($user['password_hash'])) {
-    show_error('Invalid username or password.');
-}
+try {
+    // Fetch user by username (use bind_result for compatibility).
+    $stmt = $mysqli->prepare("SELECT `id`, `username`, `password_hash` FROM `users` WHERE `username` = ? LIMIT 1");
+    $stmt->bind_param('s', $username);
+    $stmt->execute();
 
-if (!password_verify($password, $user['password_hash'])) {
-    show_error('Invalid username or password.');
+    $stmt->bind_result($id, $uname, $passwordHash);
+    if (!$stmt->fetch()) {
+        show_error($debug ? 'No user found for that username.' : 'Invalid username or password.');
+    }
+
+    if (empty($passwordHash) || !password_verify($password, (string)$passwordHash)) {
+        show_error($debug ? 'Password hash mismatch.' : 'Invalid username or password.');
+    }
+} catch (mysqli_sql_exception $e) {
+    if ($debug) {
+        show_error('Database error: ' . $e->getMessage());
+    }
+    show_error('Login failed. Please try again later.');
 }
 
 session_regenerate_id(true);
-$_SESSION['user_id'] = (int)$user['id'];
-$_SESSION['username'] = (string)$user['username'];
+$_SESSION['user_id'] = (int)$id;
+$_SESSION['username'] = (string)$uname;
 
-header('Location: index.html', true, 302);
+header('Location: dashboard.php', true, 302);
 exit;
